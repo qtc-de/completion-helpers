@@ -1,0 +1,188 @@
+#!/bin/bash
+
+function _comp_contains() {
+	# Takes two strings containing space seperated words and checks if one of the
+    # words in the second list matches one in the first.
+    # E.g.: `_comp_contains "test test2" "no nope test"` returns true.
+    #
+    # Parameters
+    #   list_lookup     (string)        Space seperated words to search in
+    #   list_search     (string)        Space seperated words to search
+    #
+    # Returns
+    #   retval          (int)           Error / Success
+    #
+    # Side effects
+    #   None
+    #
+    for word in $2; do
+
+        if [[ $1 =~ (^|[[:space:]])${word}($|[[:space:]]) ]]; then
+            return 0
+        fi
+
+    done;
+
+    return 1
+}
+
+function _comp_get_parameter() {
+    # Returns the n-th parameter from the command line (not counting options
+    # or the command name).
+    #
+    # Parameters
+    #   number          (int)           Parameter to select
+    #
+    # Returns
+    #   retval          (int)           Error / Success
+    #
+    # Side effects
+    #   result is saved in $arg variable
+    #
+    local COUNT
+
+    COUNT=0
+    arg=
+
+	for var in ${COMP_LINE}; do
+
+		# exclude options and the toolname
+		if [[ "$var" == -* ]] || [[ "$var" == "${COMP_WORDS[0]}" ]]; then
+			continue;
+		fi
+
+        COUNT=$((COUNT+1))
+        if [[ $COUNT -eq $1 ]]; then
+            arg="$var"
+            return 0
+        fi
+
+    done
+
+    return 1
+}
+
+function _comp_short_to_long() {
+	# Takes a short option name and a a list that represents the current option list.
+    # The functions assumes that the long option for a certain short option directly
+    # follows the short option inside the argument list. The corresponding long
+    # option is then returnen inside the $long variable.
+    # 
+    # Parameters
+    #   short            (string)        Name of the short option (with - prefix)
+    #   opts             (list)          Space seperated words (option list)
+    #
+    # Returns
+    #   reval           (int)           Error / Succes
+    #
+    # Side effects
+    #   stores the corresponding long option inside the $long variable
+    #
+    local short ret
+
+    short=$1
+    shift
+
+    ret=0
+    long=
+
+    while (( "$#" )); do
+
+		if [[ "$1" == "$short" ]]; then
+            shift
+            long=$1
+            return 0
+        fi
+
+        shift
+    done
+
+    return 1
+}
+
+function _comp_filter() {
+	# Takes the name of a variable that contains the current option list as a string.
+    # Iterates over the current command line and removes all options that are already
+    # present.
+    #
+    # A second string of space seperated words can be passed
+    # that are excluded from filtering. This is useful, when certain options are allowed
+    # to appear multiple times.
+    #
+    # Parameters
+    #   opts            (string)        Space seperated words to filter (call by ref)
+    #   exclude         (string)        Space seperated words to exclude
+    #
+    # Returns
+    #   reval           (int)           Error / Succes
+    #
+    # Side effects
+    #   filtered option list is stored in first variable (passed by ref)
+    #
+    local Opts=$1 filter exclude cur long
+
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    filter=" ${!Opts} "
+    exclude=$2
+
+	# iterate over each word inside the current command line
+	for var in ${COMP_LINE}; do
+
+		# exclude the current word to allow full specified options to be space completed
+		if [[ "$var" == "$cur" ]]; then
+			continue;
+
+        # exclude words from the exclusion list
+        elif _comp_contains "$exclude" $var; then
+            continue
+
+        # otherwise remove the word from the filter list
+        else
+            # if short option, remove long option
+            if [[ $var =~ ^-[a-z]$ ]]; then
+                _comp_short_to_long $var $filter && \
+                filter=( "${filter/ ${long} / }" )
+            fi
+
+            # remove actual option
+            filter=( "${filter/ ${var} / }" )
+        fi
+
+    done
+
+    _upvars -v $Opts "$filter" 
+}
+
+function _comp_filter_shorts() {
+	# Takes a string of space seperated words and removes all short options from it.
+    # Completion of short options is a matter of taste. The maintainers of bash-completion
+    # do not recommend it. Instead, completions should only handle completion for arguments
+    # that are required by short options, but to not complete short options themselfs.
+    #
+    # Parameters
+    #   opts            (string)        Space seperated option list (call by ref)
+    #
+    # Returns
+    #   reval           (int)           Error / Succes
+    #
+    # Side effects
+    #   filtered option list is stored in first variable (passed by ref)
+    #
+    local Opts=$1 filter
+
+    filter=" ${!Opts} "
+
+    for word in $filter; do
+
+        if [[ $word =~ ^-[a-z]$ ]]; then
+            filter=( "${filter/ ${word} / }" )
+        fi
+
+    done
+
+    _upvars -v $Opts "$filter" 
+}
+
+for bcfile in ~/.bash_completion.d/* ; do
+  [ -f "$bcfile" ] && . $bcfile
+done
