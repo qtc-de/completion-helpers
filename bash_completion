@@ -139,7 +139,7 @@ function _comp_filter() {
         # otherwise remove the word from the filter list
         else
             # if short option, remove long option
-            if [[ $var =~ ^-[a-z]$ ]]; then
+            if [[ $var =~ ^-[a-z0-9]+$ ]]; then
                 _comp_short_to_long $var $filter && \
                 filter=( "${filter/ ${long} / }" )
             fi
