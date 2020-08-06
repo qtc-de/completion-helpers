@@ -90,8 +90,11 @@ function _comp_short_to_long() {
 
 		if [[ "$1" == "$short" ]]; then
             shift
-            long=$1
-            return 0
+            if [[ $1 =~ ^--[^[:space:]]+$ ]]; then
+                long=$1
+                return 0
+            fi
+            return 1
         fi
 
         shift
@@ -109,9 +112,15 @@ function _comp_filter() {
     # that are excluded from filtering. This is useful, when certain options are allowed
     # to appear multiple times.
     #
+    # By default, the function will try to remove long options if their corresponding short
+    # options are used on the command line. To work correctly, this requires that each short
+    # option has a long option that directly follows the short option in the options list. If
+    # this assumption is incorrect, you should set a third parameter for _comp_filter to 'false'. 
+    #
     # Parameters
     #   opts            (string)        Space seperated words to filter (call by ref)
     #   exclude         (string)        Space seperated words to exclude
+    #   remove_longs    (string)        Decides if short-to-long translation is attempted (true|false)
     #
     # Returns
     #   reval           (int)           Error / Succes
@@ -119,11 +128,12 @@ function _comp_filter() {
     # Side effects
     #   filtered option list is stored in first variable (passed by ref)
     #
-    local Opts=$1 filter exclude cur long
+    local Opts=$1 filter exclude cur long remove_longs
 
     cur="${COMP_WORDS[COMP_CWORD]}"
     filter=" ${!Opts} "
     exclude=$2
+    remove_longs=$3
 
 	# iterate over each word inside the current command line
 	for var in ${COMP_LINE}; do
@@ -139,7 +149,7 @@ function _comp_filter() {
         # otherwise remove the word from the filter list
         else
             # if short option, remove long option
-            if [[ $var =~ ^-[a-z0-9]+$ ]]; then
+            if [[ "$remove_longs" != "false" && $var =~ ^-[a-z0-9]+$ ]]; then
                 _comp_short_to_long $var $filter && \
                 filter=( "${filter/ ${long} / }" )
             fi
