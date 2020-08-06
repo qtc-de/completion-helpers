@@ -184,7 +184,7 @@ function _comp_filter_shorts() {
 
     for word in $filter; do
 
-        if [[ $word =~ ^-[a-z]$ ]]; then
+        if [[ $word =~ ^-[a-z0-9]+$ ]]; then
             filter=( "${filter/ ${word} / }" )
         fi
 
