@@ -193,6 +193,33 @@ function _comp_filter_shorts() {
     _upvars -v $Opts "$filter" 
 }
 
+function _comp_remove_list() {
+    # Takes the current completion list and a string of space seperated words.
+    # Removes each word from the completion list that was specified in the string.
+    #
+    # Parameters
+    #   opts            (string)        Space seperated option list (call by ref)
+    #   remove          (string)        Space seperated words
+    #
+    # Returns
+    #   reval           (int)           Error / Succes
+    #
+    # Side effects
+    #   filtered option list is stored in first variable (passed by ref)
+    #
+    local Opts=$1 filter remove
+
+    filter=" ${!Opts} "
+    remove=$2
+
+    for word in $remove; do
+        filter=( "${filter/ ${word} / }" )
+    done
+
+    _upvars -v $Opts "$filter" 
+}
+
+
 for bcfile in ~/.bash_completion.d/* ; do
   [ -f "$bcfile" ] && . $bcfile
 done
