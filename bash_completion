@@ -151,11 +151,11 @@ function _comp_filter() {
             # if short option, remove long option
             if [[ "$remove_longs" != "false" && $var =~ ^-[a-z0-9]+$ ]]; then
                 _comp_short_to_long $var $filter && \
-                filter=( "${filter// ${long} / }" )
+                filter=( "${filter//[[:space:]]${long}[[:space:]]/ }" )
             fi
 
             # remove actual option
-            filter=( "${filter// ${var} / }" )
+            filter=( "${filter//[[:space:]]${var}[[:space:]]/ }" )
         fi
 
     done
@@ -185,7 +185,7 @@ function _comp_filter_shorts() {
     for word in $filter; do
 
         if [[ $word =~ ^-[a-z0-9]+$ ]]; then
-            filter=( "${filter// ${word} / }" )
+            filter=( "${filter//[[:space:]]${word}[[:space:]]/ }" )
         fi
 
     done
@@ -213,18 +213,21 @@ function _comp_remove_list() {
     remove=$2
 
     for word in $remove; do
-        filter=( "${filter// ${word} / }" )
+        filter=( "${filter//[[:space:]]${word}[[:space:]]/ }" )
     done
 
     _upvars -v $Opts "$filter" 
 }
-
 
 function _comp_to_space() {
     # In some situations, the completion list may contains newlines instead of spaces
     # (e.g. when using the _parse_help function for completion). The completion helpers
     # expect the options to be seperated by spaces to function correctly. This function
     # takes a newline seperated option list and replaces the newlines with spaces
+    #
+    # Edit: The completion helper functions should now also work for newline seperated
+    # option lists. However, this function is kept, since it might be useful in certain
+    # situations.
     #
     # Parameters
     #   opts            (string)        Newline seperated option list (call by ref)
@@ -242,6 +245,7 @@ function _comp_to_space() {
 
     _upvars -v $Opts "$filter" 
 }
+
 
 for bcfile in ~/.bash_completion.d/* ; do
   [ -f "$bcfile" ] && . $bcfile
