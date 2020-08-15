@@ -151,11 +151,11 @@ function _comp_filter() {
             # if short option, remove long option
             if [[ "$remove_longs" != "false" && $var =~ ^-[a-z0-9]+$ ]]; then
                 _comp_short_to_long $var $filter && \
-                filter=( "${filter/ ${long} / }" )
+                filter=( "${filter// ${long} / }" )
             fi
 
             # remove actual option
-            filter=( "${filter/ ${var} / }" )
+            filter=( "${filter// ${var} / }" )
         fi
 
     done
@@ -185,7 +185,7 @@ function _comp_filter_shorts() {
     for word in $filter; do
 
         if [[ $word =~ ^-[a-z0-9]+$ ]]; then
-            filter=( "${filter/ ${word} / }" )
+            filter=( "${filter// ${word} / }" )
         fi
 
     done
@@ -213,7 +213,7 @@ function _comp_remove_list() {
     remove=$2
 
     for word in $remove; do
-        filter=( "${filter/ ${word} / }" )
+        filter=( "${filter// ${word} / }" )
     done
 
     _upvars -v $Opts "$filter" 
