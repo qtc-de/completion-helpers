@@ -220,6 +220,29 @@ function _comp_remove_list() {
 }
 
 
+function _comp_to_space() {
+    # In some situations, the completion list may contains newlines instead of spaces
+    # (e.g. when using the _parse_help function for completion). The completion helpers
+    # expect the options to be seperated by spaces to function correctly. This function
+    # takes a newline seperated option list and replaces the newlines with spaces
+    #
+    # Parameters
+    #   opts            (string)        Newline seperated option list (call by ref)
+    #
+    # Returns
+    #   reval           (int)           Error / Succes
+    #
+    # Side effects
+    #   transformed option list is stored in first variable (passed by ref)
+    #
+    local Opts=$1
+
+    filter=" ${!Opts} "
+    filter=( "${filter//$'\n'/ }" )
+
+    _upvars -v $Opts "$filter" 
+}
+
 for bcfile in ~/.bash_completion.d/* ; do
   [ -f "$bcfile" ] && . $bcfile
 done
