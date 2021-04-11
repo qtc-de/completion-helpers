@@ -149,7 +149,7 @@ function _comp_filter() {
         # otherwise remove the word from the filter list
         else
             # if short option, remove long option
-            if [[ "$remove_longs" != "false" && $var =~ ^-[a-z0-9]+$ ]]; then
+            if [[ "$remove_longs" != "false" && $var =~ ^-[a-zA-Z0-9]+$ ]]; then
                 _comp_short_to_long $var $filter && \
                 filter=( "${filter//[[:space:]]${long}[[:space:]]/ }" )
             fi
@@ -184,7 +184,7 @@ function _comp_filter_shorts() {
 
     for word in $filter; do
 
-        if [[ $word =~ ^-[a-z0-9]+$ ]]; then
+        if [[ $word =~ ^-[a-zA-Z0-9]+$ ]]; then
             filter=( "${filter//[[:space:]]${word}[[:space:]]/ }" )
         fi
 
