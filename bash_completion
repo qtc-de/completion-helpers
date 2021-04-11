@@ -1,13 +1,13 @@
 #!/bin/bash
 
 function _comp_contains() {
-	# Takes two strings containing space seperated words and checks if one of the
+	# Takes two strings containing space separated words and checks if one of the
     # words in the second list matches one in the first.
     # E.g.: `_comp_contains "test test2" "no nope test"` returns true.
     #
     # Parameters
-    #   list_lookup     (string)        Space seperated words to search in
-    #   list_search     (string)        Space seperated words to search
+    #   list_lookup     (string)        Space separated words to search in
+    #   list_search     (string)        Space separated words to search
     #
     # Returns
     #   retval          (int)           Error / Success
@@ -66,14 +66,14 @@ function _comp_short_to_long() {
 	# Takes a short option name and a a list that represents the current option list.
     # The functions assumes that the long option for a certain short option directly
     # follows the short option inside the argument list. The corresponding long
-    # option is then returnen inside the $long variable.
+    # option is then returned inside the $long variable.
     # 
     # Parameters
     #   short            (string)        Name of the short option (with - prefix)
-    #   opts             (list)          Space seperated words (option list)
+    #   opts             (list)          Space separated words (option list)
     #
     # Returns
-    #   reval           (int)           Error / Succes
+    #   retval           (int)           Error / Success
     #
     # Side effects
     #   stores the corresponding long option inside the $long variable
@@ -108,7 +108,7 @@ function _comp_filter() {
     # Iterates over the current command line and removes all options that are already
     # present.
     #
-    # A second string of space seperated words can be passed
+    # A second string of space separated words can be passed
     # that are excluded from filtering. This is useful, when certain options are allowed
     # to appear multiple times.
     #
@@ -118,12 +118,12 @@ function _comp_filter() {
     # this assumption is incorrect, you should set a third parameter for _comp_filter to 'false'. 
     #
     # Parameters
-    #   opts            (string)        Space seperated words to filter (call by ref)
-    #   exclude         (string)        Space seperated words to exclude
+    #   opts            (string)        Space separated words to filter (call by ref)
+    #   exclude         (string)        Space separated words to exclude
     #   remove_longs    (string)        Decides if short-to-long translation is attempted (true|false)
     #
     # Returns
-    #   reval           (int)           Error / Succes
+    #   retval           (int)           Error / Success
     #
     # Side effects
     #   filtered option list is stored in first variable (passed by ref)
@@ -164,16 +164,16 @@ function _comp_filter() {
 }
 
 function _comp_filter_shorts() {
-	# Takes a string of space seperated words and removes all short options from it.
+	# Takes a string of space separated words and removes all short options from it.
     # Completion of short options is a matter of taste. The maintainers of bash-completion
     # do not recommend it. Instead, completions should only handle completion for arguments
-    # that are required by short options, but to not complete short options themselfs.
+    # that are required by short options, but to not complete short options themselves.
     #
     # Parameters
-    #   opts            (string)        Space seperated option list (call by ref)
+    #   opts            (string)        Space separated option list (call by ref)
     #
     # Returns
-    #   reval           (int)           Error / Succes
+    #   retval           (int)           Error / Success
     #
     # Side effects
     #   filtered option list is stored in first variable (passed by ref)
@@ -194,15 +194,15 @@ function _comp_filter_shorts() {
 }
 
 function _comp_remove_list() {
-    # Takes the current completion list and a string of space seperated words.
+    # Takes the current completion list and a string of space separated words.
     # Removes each word from the completion list that was specified in the string.
     #
     # Parameters
-    #   opts            (string)        Space seperated option list (call by ref)
-    #   remove          (string)        Space seperated words
+    #   opts            (string)        Space separated option list (call by ref)
+    #   remove          (string)        Space separated words
     #
     # Returns
-    #   reval           (int)           Error / Succes
+    #   retval           (int)           Error / Success
     #
     # Side effects
     #   filtered option list is stored in first variable (passed by ref)
@@ -222,18 +222,18 @@ function _comp_remove_list() {
 function _comp_to_space() {
     # In some situations, the completion list may contains newlines instead of spaces
     # (e.g. when using the _parse_help function for completion). The completion helpers
-    # expect the options to be seperated by spaces to function correctly. This function
-    # takes a newline seperated option list and replaces the newlines with spaces
+    # expect the options to be separated by spaces to function correctly. This function
+    # takes a newline separated option list and replaces the newlines with spaces
     #
-    # Edit: The completion helper functions should now also work for newline seperated
+    # Edit: The completion helper functions should now also work for newline separated
     # option lists. However, this function is kept, since it might be useful in certain
     # situations.
     #
     # Parameters
-    #   opts            (string)        Newline seperated option list (call by ref)
+    #   opts            (string)        Newline separated option list (call by ref)
     #
     # Returns
-    #   reval           (int)           Error / Succes
+    #   retval           (int)           Error / Success
     #
     # Side effects
     #   transformed option list is stored in first variable (passed by ref)
