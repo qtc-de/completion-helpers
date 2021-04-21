@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function _comp_contains() {
-	# Takes two strings containing space separated words and checks if one of the
+    # Takes two strings containing space separated words and checks if one of the
     # words in the second list matches one in the first.
     # E.g.: `_comp_contains "test test2" "no nope test"` returns true.
     #
@@ -44,12 +44,12 @@ function _comp_get_parameter() {
     COUNT=0
     arg=
 
-	for var in ${COMP_LINE}; do
+    for var in ${COMP_LINE}; do
 
-		# exclude options and the toolname
-		if [[ "$var" == -* ]] || [[ "$var" == "${COMP_WORDS[0]}" ]]; then
-			continue;
-		fi
+        # exclude options and the toolname
+        if [[ "$var" == -* ]] || [[ "$var" == "${COMP_WORDS[0]}" ]]; then
+            continue;
+        fi
 
         COUNT=$((COUNT+1))
         if [[ $COUNT -eq $1 ]]; then
@@ -63,11 +63,11 @@ function _comp_get_parameter() {
 }
 
 function _comp_short_to_long() {
-	# Takes a short option name and a a list that represents the current option list.
+    # Takes a short option name and a a list that represents the current option list.
     # The functions assumes that the long option for a certain short option directly
     # follows the short option inside the argument list. The corresponding long
     # option is then returned inside the $long variable.
-    # 
+    #
     # Parameters
     #   short            (string)        Name of the short option (with - prefix)
     #   opts             (list)          Space separated words (option list)
@@ -88,7 +88,7 @@ function _comp_short_to_long() {
 
     while (( "$#" )); do
 
-		if [[ "$1" == "$short" ]]; then
+        if [[ "$1" == "$short" ]]; then
             shift
             if [[ $1 =~ ^--[^[:space:]]+$ ]]; then
                 long=$1
@@ -104,7 +104,7 @@ function _comp_short_to_long() {
 }
 
 function _comp_filter() {
-	# Takes the name of a variable that contains the current option list as a string.
+    # Takes the name of a variable that contains the current option list as a string.
     # Iterates over the current command line and removes all options that are already
     # present.
     #
@@ -115,7 +115,7 @@ function _comp_filter() {
     # By default, the function will try to remove long options if their corresponding short
     # options are used on the command line. To work correctly, this requires that each short
     # option has a long option that directly follows the short option in the options list. If
-    # this assumption is incorrect, you should set a third parameter for _comp_filter to 'false'. 
+    # this assumption is incorrect, you should set a third parameter for _comp_filter to 'false'.
     #
     # Parameters
     #   opts            (string)        Space separated words to filter (call by ref)
@@ -135,12 +135,12 @@ function _comp_filter() {
     exclude=$2
     remove_longs=$3
 
-	# iterate over each word inside the current command line
-	for var in ${COMP_LINE}; do
+    # iterate over each word inside the current command line
+    for var in ${COMP_LINE}; do
 
-		# exclude the current word to allow full specified options to be space completed
-		if [[ "$var" == "$cur" ]]; then
-			continue;
+        # exclude the current word to allow full specified options to be space completed
+        if [[ "$var" == "$cur" ]]; then
+            continue;
 
         # exclude words from the exclusion list
         elif _comp_contains "$exclude" $var; then
@@ -160,11 +160,11 @@ function _comp_filter() {
 
     done
 
-    _upvars -v $Opts "$filter" 
+    _upvars -v $Opts "$filter"
 }
 
 function _comp_filter_shorts() {
-	# Takes a string of space separated words and removes all short options from it.
+    # Takes a string of space separated words and removes all short options from it.
     # Completion of short options is a matter of taste. The maintainers of bash-completion
     # do not recommend it. Instead, completions should only handle completion for arguments
     # that are required by short options, but to not complete short options themselves.
@@ -190,7 +190,7 @@ function _comp_filter_shorts() {
 
     done
 
-    _upvars -v $Opts "$filter" 
+    _upvars -v $Opts "$filter"
 }
 
 function _comp_remove_list() {
@@ -216,7 +216,7 @@ function _comp_remove_list() {
         filter=( "${filter//[[:space:]]${word}[[:space:]]/ }" )
     done
 
-    _upvars -v $Opts "$filter" 
+    _upvars -v $Opts "$filter"
 }
 
 function _comp_to_space() {
@@ -233,7 +233,7 @@ function _comp_to_space() {
     #   opts            (string)        Newline separated option list (call by ref)
     #
     # Returns
-    #   retval           (int)           Error / Success
+    #   retval          (int)           Error / Success
     #
     # Side effects
     #   transformed option list is stored in first variable (passed by ref)
@@ -243,9 +243,59 @@ function _comp_to_space() {
     filter=" ${!Opts} "
     filter=( "${filter//$'\n'/ }" )
 
-    _upvars -v $Opts "$filter" 
+    _upvars -v $Opts "$filter"
 }
 
+function _comp_list() {
+    # This function is used for list completion (comma separated words). If an option
+    # expects a comma separated list of arguments, you can call this function with the
+    # desired set of available list arguments. The function does already populate the
+    # COMPREPLY variable and you normally want to return from the completion script
+    # after calling it.
+    #
+    # Additionally to the array of available options, it is possible to specify an
+    # integer as second argument that specifies the maximum ammount of selectable
+    # options. After this amount of options was specified, space completion is enabled.
+    #
+    # Parameters
+    #   options         (string)        Space separated list of available list options
+    #   max             (int)           Maximum number of list items
+    #
+    # Returns
+    #   retval          (int)           Error / Success
+    #
+    local cur prev prev_arr options=" $1 " count=1
+
+    compopt -o nospace
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    if [[ "$cur" != ?*,* ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "${options}" -- "${cur}")
+        return 0
+
+    else
+        prev="${cur%,*}"
+        cur="${cur##*,}"
+        prev_arr=${prev//,/ }
+
+        for word in $prev_arr; do
+
+            count=$((count+1))
+            if _comp_contains "$options" $word; then
+                options=( "${options//[[:space:]]${word}[[:space:]]/ }" )
+                continue
+            fi
+
+        done
+
+        if [[ $count -ge $2 ]]; then
+            compopt +o nospace
+        fi
+
+        mapfile -t COMPREPLY < <(compgen -P "$prev," -W "${options}" -- "${cur}")
+        return 0
+    fi
+}
 
 for bcfile in ~/.bash_completion.d/* ; do
   [ -f "$bcfile" ] && . $bcfile
